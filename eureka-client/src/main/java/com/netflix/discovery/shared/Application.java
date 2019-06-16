@@ -220,6 +220,9 @@ public class Application {
                 instanceRegionChecker);
     }
 
+    //随机打乱本Application中的实例列表
+    //如果DataCenter是DataCenterInfo.Name.Amazon并且indexByRemoteRegions为true，则将本application中不属于本region
+    //的instance分类存放到remoteRegionsRegistry中，并且从实例列表中删除
     private void _shuffleAndStoreInstances(boolean filterUpInstances, boolean indexByRemoteRegions,
                                            @Nullable Map<String, Applications> remoteRegionsRegistry,
                                            @Nullable EurekaClientConfig clientConfig,
@@ -237,6 +240,8 @@ public class Application {
                 if (filterUpInstances && InstanceStatus.UP != instanceInfo.getStatus()) {
                     it.remove();
                 } else if (remoteIndexingActive) {
+                    //默认只对数据中心为DataCenterInfo.Name.Amazon的情况下有用
+                    //获取实例region
                     String instanceRegion = instanceRegionChecker.getInstanceRegion(instanceInfo);
                     if (!instanceRegionChecker.isLocalRegion(instanceRegion)) {
                         Applications appsForRemoteRegion = remoteRegionsRegistry.get(instanceRegion);
@@ -260,7 +265,7 @@ public class Application {
             }
 
         }
-        // 打乱
+        // 随机打乱
         Collections.shuffle(instanceInfoList, shuffleRandom);
         this.shuffledInstances.set(instanceInfoList);
     }

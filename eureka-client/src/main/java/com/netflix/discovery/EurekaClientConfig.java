@@ -391,6 +391,11 @@ public interface EurekaClientConfig {
      * @return true if the eureka client should log delta differences in the
      *         case of reconciliation failure.
      */
+    /*
+    指示是否在注册表信息方面记录eureka服务器和eureka客户端之间的差异。 Eureka客户端尝试仅从eureka服务器检索增量更改，以最大限度地减少网络流量。 收到增量后，eureka客户端会协调来自服务器的信息，以确认它没有遗漏一些信息。 当客户端遇到与服务器通信的网络问题时，可能会发生协调失败。如果协调失败，eureka客户端将获取完整的注册表信息。
+在获取完整的注册表信息时，eureka客户端可以记录客户端和服务器之间的差异，此设置可以控制它。
+这些更改在运行时在{@link #getRegistryFetchIntervalSeconds（）}指定的下一个注册表获取周期中有效</ em>
+     */
     boolean shouldLogDeltaDiff();
 
     /**
@@ -420,7 +425,7 @@ public interface EurekaClientConfig {
      * Failing to do so, will result in failure of discovery client startup.
      *
      * 获取哪些区域( Region )集合的注册信息
-     * TODO 芋艿：null为获取全部，得再确认下
+     *null只获取本region，否则获取本region+RemoteRegions
      *
      * @return Comma separated list of regions for which the eureka registry information will be fetched.
      * <code>null</code> if no remote region has to be fetched.

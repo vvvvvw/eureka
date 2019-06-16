@@ -156,7 +156,9 @@ public class PeerEurekaNodes {
     protected List<String> resolvePeerUrls() {
         // 获得 Eureka-Server 集群服务地址数组
         InstanceInfo myInfo = applicationInfoManager.getInfo();
+        //获取本注册中心的zone
         String zone = InstanceInfo.getZone(clientConfig.getAvailabilityZones(clientConfig.getRegion()), myInfo);
+        //获取serviceUrl
         List<String> replicaUrls = EndpointUtils.getDiscoveryServiceUrls(clientConfig, zone, new EndpointUtils.InstanceInfoBasedUrlRandomizer(myInfo));
 
         // 移除自己（避免向自己同步）

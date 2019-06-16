@@ -45,7 +45,7 @@ public class ZoneAffinityClusterResolver implements ClusterResolver<AwsEndpoint>
      */
     private final String myZone;
     /**
-     * 是否可用区亲和
+     * 是否可用区亲和(如果是，优先使用同zone的，否则优先使用非同zone的)
      */
     private final boolean zoneAffinity;
 
@@ -63,13 +63,15 @@ public class ZoneAffinityClusterResolver implements ClusterResolver<AwsEndpoint>
         return delegate.getRegion();
     }
 
+    ////返回两个List<AwsEndpoint>列表，第一个列表中的是和myZone属于同一个zone的EndPoint
     @Override
     public List<AwsEndpoint> getClusterEndpoints() {
         // 拆分成 本地的可用区和非本地的可用区的 EndPoint 集群
+        //第一个列表中的是和myZone属于同一个zone的EndPoint
         List<AwsEndpoint>[] parts = ResolverUtils.splitByZone(delegate.getClusterEndpoints(), myZone);
         List<AwsEndpoint> myZoneEndpoints = parts[0];
         List<AwsEndpoint> remainingEndpoints = parts[1];
-        // 随机打乱 EndPoint 集群并进行合并
+        // 随机打乱 EndPoint 集群并进行合并,列表的前面是 myZoneEndpoints，后面是 remainingEndpoints
         List<AwsEndpoint> randomizedList = randomizeAndMerge(myZoneEndpoints, remainingEndpoints);
         // 非可用区亲和，将非本地的可用区的 EndPoint 集群放在前面
         if (!zoneAffinity) {

@@ -39,6 +39,10 @@ import java.util.regex.Pattern;
  *
  * @author Tomasz Bak
  */
+/*
+本客户端会跟随重定向链接，并对最终解析的端点执行请求。
+如果必须单独处理注册和查询请求，则应创建两个不同的实例。
+ */
 public class RedirectingEurekaHttpClient extends EurekaHttpClientDecorator {
 
     private static final Logger logger = LoggerFactory.getLogger(RedirectingEurekaHttpClient.class);

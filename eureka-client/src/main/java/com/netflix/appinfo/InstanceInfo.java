@@ -1413,6 +1413,7 @@ public class InstanceInfo {
      * @return - The zone in which the particular instance belongs to.
      */
     public static String getZone(String[] availZones, InstanceInfo myInfo) {
+        //eureka.client.availabilityZones属性的第一个值 或者 default
         String instanceZone = ((availZones == null || availZones.length == 0) ? "default"
                 : availZones[0]);
         if (myInfo != null && myInfo.getDataCenterInfo().getName() == DataCenterInfo.Name.Amazon) {

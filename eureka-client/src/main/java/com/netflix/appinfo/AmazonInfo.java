@@ -60,6 +60,7 @@ public class AmazonInfo implements DataCenterInfo, UniqueIdentifier {
         instanceType("instance-type"),
         localIpv4("local-ipv4"),
         localHostname("local-hostname"),
+        //本instance属于哪个zone
         availabilityZone("availability-zone", "placement/"),
         publicHostname("public-hostname"),
         publicIpv4("public-ipv4"),

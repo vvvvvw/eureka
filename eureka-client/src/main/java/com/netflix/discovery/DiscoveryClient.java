@@ -138,7 +138,7 @@ public class DiscoveryClient implements EurekaClient {
      */
     private final PreRegistrationHandler preRegistrationHandler;
     /**
-     * Applications 在本地的缓存
+     *  本地region缓存的Applications
      */
     private final AtomicReference<Applications> localRegionApps = new AtomicReference<Applications>();
     private final Lock fetchRegistryUpdateLock = new ReentrantLock();
@@ -164,6 +164,8 @@ public class DiscoveryClient implements EurekaClient {
     private final EurekaTransport eurekaTransport;
 
     private volatile HealthCheckHandler healthCheckHandler;
+    //Map<远程region名，Applications>
+    //todo 只有当DataCenter是DataCenterInfo.Name.Amazon的时候才有效
     private volatile Map<String, Applications> remoteRegionVsApps = new ConcurrentHashMap<>();
     private volatile InstanceInfo.InstanceStatus lastRemoteInstanceStatus = InstanceInfo.InstanceStatus.UNKNOWN;
     /**
@@ -1150,6 +1152,7 @@ public class DiscoveryClient implements EurekaClient {
                 logger.warn("Cannot acquire update lock, aborting getAndUpdateDelta");
             }
             // There is a diff in number of instances for some reason
+            // TODO: 这个是或？  by 15258 2019/6/16 9:03
             if (!reconcileHashCode.equals(delta.getAppsHashCode()) // 一致性哈希值不相等
                     || clientConfig.shouldLogDeltaDiff()) { //
                 reconcileAndLogDifference(delta, reconcileHashCode);  // this makes a remoteCall
@@ -1231,6 +1234,7 @@ public class DiscoveryClient implements EurekaClient {
      *            the delta information received from eureka server in the last
      *            poll cycle.
      */
+    //将增量变化应用到 localRegionApps和remoteRegionVsApps
     private void updateDelta(Applications delta) {
         int deltaCount = 0;
         for (Application app : delta.getRegisteredApplications()) { // 循环增量（变化）应用集合
@@ -1429,9 +1433,9 @@ public class DiscoveryClient implements EurekaClient {
      * isDirty flag on the instanceInfo is set to true
      */
     void refreshInstanceInfo() {
-        // 刷新 数据中心信息
+        // 获取本地最新的数据中心信息
         applicationInfoManager.refreshDataCenterInfoIfRequired();
-        // 刷新 租约信息
+        // 获取本地最新的租约信息
         applicationInfoManager.refreshLeaseInfoIfRequired();
         // 健康检查
         InstanceStatus status;
@@ -1619,8 +1623,12 @@ public class DiscoveryClient implements EurekaClient {
         if (apps != null) {
             if (isFetchingRemoteRegionRegistries()) {
                 Map<String, Applications> remoteRegionVsApps = new ConcurrentHashMap<String, Applications>();
+                //随机打乱本Application中的实例列表
+                //如果DataCenter是DataCenterInfo.Name.Amazon并且indexByRemoteRegions为true，则将本application中不属于本region
+                //的instance分类存放到remoteRegionsRegistry中，并且从实例列表中删除
                 apps.shuffleAndIndexInstances(remoteRegionVsApps, clientConfig, instanceRegionChecker);
                 for (Applications applications : remoteRegionVsApps.values()) {
+                    //分类打乱各个region中的数据
                     applications.shuffleInstances(clientConfig.shouldFilterOnlyUpInstances());
                 }
                 this.remoteRegionVsApps = remoteRegionVsApps;

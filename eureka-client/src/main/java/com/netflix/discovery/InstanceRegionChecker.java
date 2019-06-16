@@ -28,6 +28,7 @@ public class InstanceRegionChecker {
         this.localRegion = localRegion;
     }
 
+    //默认只对数据中心为DataCenterInfo.Name.Amazon的情况下有用
     @Nullable
     public String getInstanceRegion(InstanceInfo instanceInfo) {
         if (instanceInfo.getDataCenterInfo() == null || instanceInfo.getDataCenterInfo().getName() == null) {

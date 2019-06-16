@@ -35,7 +35,8 @@ import static com.netflix.discovery.EurekaClientNames.METRIC_TRANSPORT_PREFIX;
  * {@link SessionedEurekaHttpClient} enforces full reconnect at a regular interval (a session), preventing
  * a client to sticking to a particular Eureka server instance forever. This in turn guarantees even
  * load distribution in case of cluster topology change.
- *
+ * 以固定间隔（a session）强制执行 重新创建客户端，防止客户端永远粘贴到特定的Eureka服务器实例。
+ * 这反过来保证了在集群拓扑变化的情况下均匀的负载分配
  * @author Tomasz Bak
  */
 public class SessionedEurekaHttpClient extends EurekaHttpClientDecorator {

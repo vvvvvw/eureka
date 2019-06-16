@@ -41,6 +41,8 @@ public class EndpointUtils {
             if ((instanceInfo == null) || (listSize == 0)) {
                 return;
             }
+            //找到实例主机名的哈希码，并使用它来查找条目，然后在此条目后排列其余条目。
+            //随机排列serviceUrl
             // Find the hashcode of the instance hostname and use it to find an entry
             // and then arrange the rest of the entries after this entry.
             int instanceHashcode = instanceInfo.getHostName().hashCode();
@@ -64,6 +66,7 @@ public class EndpointUtils {
      *
      * @return The list of all eureka service urls for the eureka client to talk to.
      */
+    //获取Services url
     public static List<String> getDiscoveryServiceUrls(EurekaClientConfig clientConfig, String zone, ServiceUrlRandomizer randomizer) {
         boolean shouldUseDns = clientConfig.shouldUseDnsForFetchingServiceUrls();
         if (shouldUseDns) {
@@ -89,6 +92,8 @@ public class EndpointUtils {
         String region = getRegion(clientConfig);
         // Get zone-specific DNS names for the given region so that we can get a
         // list of available zones
+        //获取本region dns配置的所有zone的dns地址
+        //Map<zone,List<zone对应的dns地址>>
         Map<String, List<String>> zoneDnsNamesMap = getZoneBasedDiscoveryUrlsFromRegion(clientConfig, region);
         Set<String> availableZones = zoneDnsNamesMap.keySet();
         List<String> zones = new ArrayList<String>(availableZones);
@@ -109,6 +114,7 @@ public class EndpointUtils {
                 }
             }
             if (zoneFound) {
+                //[所有zone，本机zone，找到的zone索引]
                 Object[] args = {zones, instanceZone, zoneIndex};
                 logger.debug("The zone index from the list {} that matches the instance zone {} is {}", args);
                 break;
@@ -119,6 +125,7 @@ public class EndpointUtils {
             logger.warn("No match for the zone {} in the list of available zones {}",
                     instanceZone, Arrays.toString(zones.toArray()));
         } else {
+            //排列zone
             // Rearrange the zones with the instance zone first
             for (int i = 0; i < zoneIndex; i++) {
                 String zone = zones.remove(0);
@@ -128,6 +135,7 @@ public class EndpointUtils {
 
         // Now get the eureka urls for all the zones in the order and return it
         List<String> serviceUrls = new ArrayList<String>();
+        //遍历zone获取 serviceUrl
         for (String zone : zones) {
             for (String zoneCname : zoneDnsNamesMap.get(zone)) {
                 List<String> ec2Urls = new ArrayList<String>(getEC2DiscoveryUrlsFromZone(zoneCname, DiscoveryUrlType.CNAME));
@@ -148,6 +156,7 @@ public class EndpointUtils {
         }
         // Rearrange the fail over server list to distribute the load
         String primaryServiceUrl = serviceUrls.remove(0);
+        //随机排列 第一个之后的serviceUrls
         randomizer.randomize(serviceUrls);
         serviceUrls.add(0, primaryServiceUrl);
 
@@ -164,15 +173,19 @@ public class EndpointUtils {
      * @param preferSameZone true if we have to prefer the same zone as the client, false otherwise
      * @return The list of all eureka service urls for the eureka client to talk to
      */
+    //获取本region的service urls列表，按照availableZone排列，如果为true，从本zone开始；如果preferSameZone为false;得到从第一个非本zone 的zone开始
     public static List<String> getServiceUrlsFromConfig(EurekaClientConfig clientConfig, String instanceZone, boolean preferSameZone) {
         List<String> orderedUrls = new ArrayList<String>();
+        //得到本机region
         String region = getRegion(clientConfig);
+        //得到可用zone列表
         String[] availZones = clientConfig.getAvailabilityZones(clientConfig.getRegion());
         if (availZones == null || availZones.length == 0) {
             availZones = new String[1];
             availZones[0] = DEFAULT_ZONE;
         }
         logger.debug("The availability zone for the given region {} are {}", region, Arrays.toString(availZones));
+        //如果preferSameZone为true，得到第一个本zone的索引；如果preferSameZone为false;得到第一个非本zone的索引
         int myZoneOffset = getZoneOffset(instanceZone, preferSameZone, availZones);
 
         List<String> serviceUrls = clientConfig.getEurekaServerServiceUrls(availZones[myZoneOffset]);
@@ -296,6 +309,8 @@ public class EndpointUtils {
      * @return - The list of CNAMES from which the zone-related information can
      *         be retrieved
      */
+    //获取本region dns配置的所有zone的dns地址
+    //retrun Map<zone,List<zone对应的dns地址>>
     public static Map<String, List<String>> getZoneBasedDiscoveryUrlsFromRegion(EurekaClientConfig clientConfig, String region) {
         String discoveryDnsName = null;
         try {
@@ -352,6 +367,7 @@ public class EndpointUtils {
     /**
      * Gets the zone to pick up for this instance.
      */
+    //如果preferSameZone为true，得到第一个本zone的索引；如果preferSameZone为false;得到第一个非本zone的索引
     private static int getZoneOffset(String myZone, boolean preferSameZone, String[] availZones) {
         for (int i = 0; i < availZones.length; i++) {
             if (myZone != null && (availZones[i].equalsIgnoreCase(myZone.trim()) == preferSameZone)) {

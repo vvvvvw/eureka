@@ -100,7 +100,7 @@ public class PeerEurekaNode {
     private final HttpReplicationClient replicationClient;
 
     /**
-     * 批量任务分发器
+     * 批量任务分发器（将任务队列中的任务全部提取并调用对方批量接口）
      */
     private final TaskDispatcher<String, ReplicationTask> batchingDispatcher;
     /**

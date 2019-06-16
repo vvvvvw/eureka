@@ -19,7 +19,7 @@ public interface EurekaTransportConfig {
     int getSessionedClientReconnectIntervalSeconds();
 
     /**
-     * 重试 EurekaHttpClient ，请求失败的 Eureka-Server 隔离集合占比 Eureka-Server 全量集合占比，超过该比例，进行清空。
+     * 重试 EurekaHttpClient ，请求失败被移除的 Eureka-Server 隔离集合占比 Eureka-Server 全量集合占比，超过该比例，进行清空。
      *
      * {@link com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient#getHostCandidates()}
      *
@@ -112,6 +112,10 @@ public interface EurekaTransportConfig {
      * targets as the bootstrap servers depending on how servers are setup.
      *
      * @return true by default.
+     */
+    /*
+    将此属性设置为false以使用间接解析程序通过{@link #getReadClusterVip（）}解析查询目标。
+     此间接解析程序可能会也可能不会返回与引导程序服务器相同的目标，具体取决于服务器的设置方式。
      */
     boolean useBootstrapResolverForQuery();
 }

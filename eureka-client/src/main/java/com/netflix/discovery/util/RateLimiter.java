@@ -71,7 +71,7 @@ public class RateLimiter {
      * 获取令牌( Token )
      *
      * @param burstSize 令牌桶上限
-     * @param averageRate 令牌再装平均速率
+     * @param averageRate 令牌再装平均速率(根据rateToMsConversion)
      * @return 是否获取成功
      */
     public boolean acquire(int burstSize, long averageRate) {

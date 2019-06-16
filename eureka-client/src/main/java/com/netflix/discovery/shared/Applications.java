@@ -86,7 +86,7 @@ public class Applications {
     private final AbstractQueue<Application> applications;
     /**
      * 应用映射
-     * key：应用名
+     * key：应用名 Map<应用名，Application>
      */
     private final Map<String, Application> appNameApplicationMap;
 
@@ -234,6 +234,7 @@ public class Applications {
      * @return the internal hash code representation indicating the information
      *         about the instances.
      */
+    ////appsHashCode = ${status1}_${count1}_${status2}_${count2}_...
     @JsonIgnore
     public String getReconcileHashCode() {
         // 计数集合 key：应用实例状态

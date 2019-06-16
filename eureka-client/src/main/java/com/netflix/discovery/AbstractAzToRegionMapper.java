@@ -20,6 +20,7 @@ import static com.netflix.discovery.DefaultEurekaClientConfig.DEFAULT_ZONE;
 /**
  * @author Nitesh Kant
  */
+//远程region到可用区的映射关系
 public abstract class AbstractAzToRegionMapper implements AzToRegionMapper {
 
     private static final Logger logger = LoggerFactory.getLogger(InstanceRegionChecker.class);
@@ -32,6 +33,8 @@ public abstract class AbstractAzToRegionMapper implements AzToRegionMapper {
      * any availability zone mapping, we will use these defaults. OTOH, if the remote region has any mapping defaults
      * will not be used.
      */
+    /** region到可用zone的映射的默认值，如果配置的需要获取的远程region没有任何可用zone映射，我们将使用这些默认值。否则，
+     * 将不会被使用。 **/
     private final Multimap<String, String> defaultRegionVsAzMap =
             Multimaps.newListMultimap(new HashMap<String, Collection<String>>(), new Supplier<List<String>>() {
                 @Override
@@ -40,7 +43,9 @@ public abstract class AbstractAzToRegionMapper implements AzToRegionMapper {
                 }
             });
 
+    //Map<availablezone,region>
     private final Map<String, String> availabilityZoneVsRegion = new ConcurrentHashMap<String, String>();
+    //当前配置的可供拉取的远程region
     private String[] regionsToFetch;
 
     protected AbstractAzToRegionMapper(EurekaClientConfig clientConfig) {
@@ -48,6 +53,9 @@ public abstract class AbstractAzToRegionMapper implements AzToRegionMapper {
         populateDefaultAZToRegionMap();
     }
 
+    //返回 Map<zone,region>
+    //如果对应region的availabilityZones为空或者是defaultZone的话，
+    // 则会判断defaultRegionVsAzMap.containsKey(remoteRegion)，如果为false的话，进入的分支会抛出RuntimeException
     @Override
     public synchronized void setRegionsToFetch(String[] regionsToFetch) {
         if (null != regionsToFetch) {
@@ -93,8 +101,10 @@ public abstract class AbstractAzToRegionMapper implements AzToRegionMapper {
      * @param region the region whose zones you want
      * @return a set of zones
      */
+    //获取region的可用zone
     protected abstract Set<String> getZonesForARegion(String region);
 
+    //根据zone名获取region名字
     @Override
     public String getRegionForAvailabilityZone(String availabilityZone) {
         String region = availabilityZoneVsRegion.get(availabilityZone);
@@ -104,6 +114,7 @@ public abstract class AbstractAzToRegionMapper implements AzToRegionMapper {
         return region;
     }
 
+    //刷新 映射关系配置
     @Override
     public synchronized void refreshMapping() {
         logger.info("Refreshing availability zone to region mappings.");
@@ -114,6 +125,11 @@ public abstract class AbstractAzToRegionMapper implements AzToRegionMapper {
      * Tries to determine what region we're in, based on the provided availability zone.
      * @param availabilityZone the availability zone to inspect
      * @return the region, if available; null otherwise
+     */
+    /**
+     * 尝试根据提供的可用区域确定我们所在的区域。其实就是假定 可用区域名就是在region名后面增加一个字符
+     * @param availabilityZone 可用区域
+     * @return
      */
     protected String parseAzToGetRegion(String availabilityZone) {
         // Here we see that whether the availability zone is following a pattern like <region><single letter>

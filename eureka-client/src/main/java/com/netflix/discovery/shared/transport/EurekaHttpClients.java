@@ -128,9 +128,9 @@ public final class EurekaHttpClients {
      */
     static ClosableResolver<AwsEndpoint> defaultBootstrapResolver(final EurekaClientConfig clientConfig,
                                                                   final InstanceInfo myInstanceInfo) {
-        // 获得 可用区集合
+        // 获得 可用zone集合
         String[] availZones = clientConfig.getAvailabilityZones(clientConfig.getRegion());
-        // 获得 应用实例的 可用区
+        // 获得 应用实例的 可用区（第一个可用zone或者default）
         String myZone = InstanceInfo.getZone(availZones, myInstanceInfo);
 
         // 创建 ZoneAffinityClusterResolver
