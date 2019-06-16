@@ -80,7 +80,10 @@ public class RemoteRegionRegistry implements LookupService<String> {
     private final AtomicLong fetchRegistryGeneration = new AtomicLong(0);
     private final Lock fetchRegistryUpdateLock = new ReentrantLock();
 
+    //全量数据
     private final AtomicReference<Applications> applications = new AtomicReference<Applications>(new Applications());
+    //如果是增量获取，则是远程region最后一次返回的增量数据；如果是全量获取，则是远程region最后一次返回的全量数据
+    //本数据是返回给 需要增量获取的客户端的(客户端和来获取数据的远程region都算是客户端)
     private final AtomicReference<Applications> applicationsDelta = new AtomicReference<Applications>(new Applications());
     private final EurekaServerConfig serverConfig;
     private volatile boolean readyForServingData;

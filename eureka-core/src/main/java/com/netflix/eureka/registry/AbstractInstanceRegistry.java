@@ -74,6 +74,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      */
     private final ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry = new ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>>();
 
+    //其他region的应用信息
     protected Map<String, RemoteRegionRegistry> regionNameVSRemoteRegistry = new HashMap<String, RemoteRegionRegistry>();
 
     /**
@@ -285,6 +286,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                         // Since the client wants to cancel it, reduce the threshold
                         // (1
                         // for 30 seconds, 2 for a minute)
+                        //增加 默认续约时间是30秒，所以每分钟就是增加2次
                         this.expectedNumberOfRenewsPerMin = this.expectedNumberOfRenewsPerMin + 2;
                         this.numberOfRenewsPerMinThreshold =
                                 (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
@@ -1070,7 +1072,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
      * not exist locally or in remote regions.
      */
     public Applications getApplicationDeltasFromMultipleRegions(String[] remoteRegions) {
-        // 获得 过滤的应用实例信息所在的区域( region ) TODO 芋艿：可能不对
+        // 获得 客户端传过来的的应用实例信息所在的区域( region )，如果为null，表示所有region
         if (null == remoteRegions) {
             remoteRegions = allKnownRemoteRegions; // null means all remote regions.
         }
@@ -1135,6 +1137,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
 
             // TODO 芋艿：设定版本号
             Applications allApps = getApplicationsFromMultipleRegions(remoteRegions);
+            //hash值使用的是所有实例信息的hash值
             apps.setAppsHashCode(allApps.getReconcileHashCode());
             return apps;
         } finally {
@@ -1423,6 +1426,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
          * clock skew or gc for example) causes the actual eviction task to execute later than the desired time
          * according to the configured cycle.
          */
+        //计算本次执行时间和上次时间时间 相对于 执行间隔的差值
         long getCompensationTimeMs() {
             long currNanos = getCurrentTimeNano();
             long lastNanos = lastExecutionNanosRef.getAndSet(currNanos);

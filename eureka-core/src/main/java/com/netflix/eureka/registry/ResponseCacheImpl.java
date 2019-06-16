@@ -233,6 +233,7 @@ public class ResponseCacheImpl implements ResponseCache {
      *
      * @param appName the application name of the application.
      */
+    //状态变化，数据设置为无效
     @Override
     public void invalidate(String appName, @Nullable String vipAddress, @Nullable String secureVipAddress) {
         for (Key.KeyType type : Key.KeyType.values()) {
